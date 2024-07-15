@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ImageBackground, ToastAndroid, Button } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ImageBackground, ToastAndroid, StatusBar } from 'react-native';
 import Search from '../components/Search';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Card from "../components/Card";
-
-const API_KEY = "8e62b436f4aee9bbb341843a666409ba";
+import { OPEN_WEATHER_API_KEY } from "@env";
 
 export default function LocationDetails({ route, navigation }) {
   const { location } = route.params;
@@ -16,13 +15,12 @@ export default function LocationDetails({ route, navigation }) {
 
   async function fetchWeatherData(cityName) {
     setLoaded(false);
-    const API = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${API_KEY}`;
+    const API = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${OPEN_WEATHER_API_KEY}`;
     try {
       const response = await fetch(API);
       if (response.status == 200) {
         const data = await response.json();
         setWeatherData(data);
-        console.log(data);
       }
       setLoaded(true);
     } catch (error) {
@@ -97,26 +95,36 @@ export default function LocationDetails({ route, navigation }) {
   const condition = weatherData.weather[0].description;
 
   // Set Location's current Weather background image and description
-  let weatherImage = require("../assets/images/forest_sunny.png");
-  let weatherBgColor = "#47AB2F";
-  let weatherDescription = "SUNNY";
-  let barColor = "#ffd5a0";
+  let weatherImage;
+  let weatherBgColor;
+  let weatherDescription;
+  let barColor;
 
-  if (condition === "Clear") {
-    weatherImage = require("../assets/images/forest_sunny.png");
-    weatherBgColor = "#47AB2F";
-    weatherDescription = "SUNNY";
-    barColor = "#ffd5a0";
-  } else if (condition === "Clouds") {
-    weatherImage = require("../assets/images/forest_cloudy.png");
-    weatherBgColor = "#54717A";
-    weatherDescription = "CLOUDY";
-    barColor = "#5f8498";
-  } else if (condition === "Rain") {
-    weatherImage = require("../assets/images/forest_rainy.png");
-    weatherBgColor = "#57575DF";
-    weatherDescription = "RAINY";
-    barColor = "#757575";
+  switch (condition) {
+    case "Clear":
+      weatherImage = require("../assets/images/sea_sunnypng.png");
+      weatherBgColor = "#47AB2F";
+      weatherDescription = "SUNNY";
+      barColor = "#ffd5a0";
+      break;
+    case "Clouds":
+      weatherImage = require("../assets/images/sea_cloudy.png");
+      weatherBgColor = "#54717A";
+      weatherDescription = "CLOUDY";
+      barColor = "#5f8498";
+      break;
+    case "Rain":
+      weatherImage = require("../assets/images/sea_rainy.png");
+      weatherBgColor = "#57575DF";
+      weatherDescription = "RAINY";
+      barColor = "#757575";
+      break;
+    default:
+      weatherImage = require("../assets/images/sea_sunnypng.png");
+      weatherBgColor = "#47AB2F";
+      weatherDescription = "SUNNY";
+      barColor = "#ffd5a0";
+      break;
   }
 
   const {
@@ -134,6 +142,7 @@ export default function LocationDetails({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <StatusBar translucent backgroundColor={barColor} />
       <View style={{ flex: 1 }}>
         <ImageBackground
           resizeMode="stretch"
@@ -170,40 +179,47 @@ export default function LocationDetails({ route, navigation }) {
           </View>
         </ImageBackground>
       </View>
-      <View>
-        <Text style={styles.detailTitle}>More Details</Text>
+      <View style={[styles.cardContainer, { backgroundColor: weatherBgColor }]}>
+        <Text style={styles.subtitle}>Feels like</Text>
+        <View style={styles.cardRow}>
+          <Card style={styles.card}>
+            <Text>Max Temp</Text>
+            <Text>{Math.round(temp_max)}°</Text>
+          </Card>
+          <Card style={styles.card}>
+            <Text>Min Temp</Text>
+            <Text>{Math.round(temp_min)}°</Text>
+          </Card>
+        </View>
+        <View style={styles.cardRow}>
+          <Card style={styles.card}>
+            <Text>Wind</Text>
+            <Text>{speed} m/s</Text>
+          </Card>
+          <Card style={styles.card}>
+            <Text>Humidity</Text>
+            <Text>{humidity}%</Text>
+          </Card>
+        </View>
+        <View style={styles.cardRow}>
+          <Card style={styles.card}>
+            <Text>Sunrise</Text>
+            <Text>{formatTime(sunrise)}</Text>
+          </Card>
+          <Card style={styles.card}>
+            <Text>Sunset</Text>
+            <Text>{formatTime(sunset)}</Text>
+          </Card>
+        </View>
+      
+      <TouchableOpacity
+        style={styles.roundedButton}
+        onPress={() => navigation.navigate("Map", { locationName: name })}
+      >
+        <FontAwesome name="map" size={20} color="white" />
+        <Text style={styles.buttonText}>View on Map</Text>
+      </TouchableOpacity>
       </View>
-      <View style={styles.cardContainer}>
-        <Card style={styles.card}>
-          <Text>Max Temp</Text>
-          <Text>{Math.round(temp_max)}°</Text>
-        </Card>
-        <Card style={styles.card}>
-          <Text>Min Temp</Text>
-          <Text>{Math.round(temp_min)}°</Text>
-        </Card>
-      </View>
-      <View style={styles.cardContainer}>
-        <Card style={styles.card}>
-          <Text>Wind</Text>
-          <Text>{speed} m/s</Text>
-        </Card>
-        <Card style={styles.card}>
-          <Text>Humidity</Text>
-          <Text>{humidity}%</Text>
-        </Card>
-      </View>
-      <View style={styles.cardContainer}>
-        <Card style={styles.card}>
-          <Text>Sunrise</Text>
-          <Text>{formatTime(sunrise)}</Text>
-        </Card>
-        <Card style={styles.card}>
-          <Text>Sunset</Text>
-          <Text>{formatTime(sunset)}</Text>
-        </Card>
-      </View>
-      <Button style={styles.button} title="View on Map" onPress={() => navigation.navigate("Map", { locationName: name })}></Button>
     </View>
   );
 }
@@ -211,9 +227,6 @@ export default function LocationDetails({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  text: {
-    fontSize: 24,
   },
   searchBarstyle: {
     flexDirection: "row",
@@ -224,33 +237,49 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 36,
     fontWeight: "bold",
-    color: "#e96e50",
+    color: "white",
     marginRight: 15,
   },
-  detailTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
+  subtitle: {
     textAlign: "center",
-    marginVertical: 10,
+    fontSize: 20,
+    color: "white",
+    fontWeight: "bold",
   },
   cardContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  cardRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    marginBottom: 10,
   },
   card: {
     flex: 1,
     padding: 20,
-    margin: 10,
+    marginHorizontal: 5,
     backgroundColor: "#fff",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
   },
-  button: {
-    flex: 1,
+  roundedButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginHorizontal: 30,
-    marginBottom: 10
-  }
+    marginBottom: 10,
+    marginTop: 20,
+    borderRadius: 10,
+    paddingVertical: 15,
+    backgroundColor: "#e96e50",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 10,
+  },
 });

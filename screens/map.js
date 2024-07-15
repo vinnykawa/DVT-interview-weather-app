@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, ActivityIndicator } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import axios from "axios";
+import {GOOGLE_API_KEY} from "@env";
 
 export default function MapScreen({ route }) {
   const { locationName } = route.params;
@@ -11,7 +12,7 @@ export default function MapScreen({ route }) {
     const fetchCoordinates = async () => {
       try {
         const response = await axios.get(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=AIzaSyDqa7bOftmSXVjRX8B1bMQ-qgWrwUmWc60`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=${GOOGLE_API_KEY}`
         );
         if (response.data.status === "OK") {
           const { lat, lng } = response.data.results[0].geometry.location;

@@ -13,9 +13,8 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import CustomDrawerToggle from "../components/DrawerToggleIcon";
-import Ionicons from '@expo/vector-icons/Ionicons';
-
-const openWeatherKey = `8e62b436f4aee9bbb341843a666409ba`;
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { OPEN_WEATHER_API_KEY } from "@env";
 
 const HomeScreen = ({ navigation }) => {
   const [currentWeather, setCurrentWeather] = useState(null);
@@ -33,7 +32,7 @@ const HomeScreen = ({ navigation }) => {
       const { latitude: lat, longitude: lon } = location.coords;
 
       const weatherResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${openWeatherKey}`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPEN_WEATHER_API_KEY}`
       );
       const weatherData = await weatherResponse.json();
       if (!weatherResponse.ok) {
@@ -43,7 +42,7 @@ const HomeScreen = ({ navigation }) => {
       setCurrentWeather(weatherData);
 
       const forecastResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${openWeatherKey}`
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${OPEN_WEATHER_API_KEY}`
       );
       const forecastData = await forecastResponse.json();
       if (!forecastResponse.ok) {
@@ -88,8 +87,15 @@ const HomeScreen = ({ navigation }) => {
 
   const listData = forecast.list.reduce((acc, d, index) => {
     const dayName = daysOfWeek[new Date(d.dt * 1000).getDay()];
-    if (today !== new Date(d.dt * 1000).getDay() && !acc.some(item => item.day === dayName)) {
-      acc.push({ id: index.toString(), day: dayName, temp: Math.round(d.main.temp_max) });
+    if (
+      today !== new Date(d.dt * 1000).getDay() &&
+      !acc.some((item) => item.day === dayName)
+    ) {
+      acc.push({
+        id: index.toString(),
+        day: dayName,
+        temp: Math.round(d.main.temp_max),
+      });
     }
     return acc;
   }, []);
@@ -175,12 +181,25 @@ const HomeScreen = ({ navigation }) => {
         }}
         source={weatherImage}
       >
-        <View style={{ alignSelf: "flex-start", marginTop: -40, marginStart: 10, flexDirection:"row", alignItems: "center" }}>
+        <View
+          style={{
+            alignSelf: "flex-start",
+            marginTop: -40,
+            marginStart: 10,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
           <CustomDrawerToggle navigationProps={navigation} />
           <Text style={styles.drawerToggleStyle}>{currentLocation}</Text>
-          <Ionicons name="location-sharp" size={20} color= "#fff" style={{marginBottom:30}} /> 
+          <Ionicons
+            name="location-sharp"
+            size={20}
+            color="#fff"
+            style={{ marginBottom: 30 }}
+          />
         </View>
-        
+
         <View style={{ marginBottom: 50 }}>
           <Text style={{ fontSize: 60, fontWeight: "bold", color: "white" }}>
             {currentTemp}°
@@ -260,7 +279,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 2,
     marginBottom: 30,
-    marginStart:15
+    marginStart: 15,
   },
 });
 

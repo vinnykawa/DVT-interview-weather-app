@@ -12,14 +12,21 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-   <NavigationContainer>
-    <Stack.Navigator initialRouteName="Drawer">
-      <Stack.Screen name='Drawer' component={MyDrawer} options={{headerShown: false}}/>
-      <Stack.Screen name= 'LocationDetails' component={LocationDetailsScreen} />
-      <Stack.Screen name= 'Map' component={MapScreen} />
-
-    </Stack.Navigator>
-   </NavigationContainer>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Drawer">
+        <Stack.Screen
+          name="Drawer"
+          component={MyDrawer}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LocationDetails"
+          component={LocationDetailsScreen}
+          options={{headerTitle: "Location Details"}}
+        />
+        <Stack.Screen name="Map" component={MapScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 

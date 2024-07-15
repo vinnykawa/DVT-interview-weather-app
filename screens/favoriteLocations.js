@@ -12,10 +12,9 @@ function LocationScreen({navigation}) {
     try {
       const favs = await AsyncStorage.getItem("favs");
       if (favs !== null) {
-        setFavorites(JSON.parse(favs))
-        console.log(favorites)
+        setFavorites(JSON.parse(favs));
       }
-      setLoaded(true)
+      setLoaded(true);
     } catch (error) {
       console.log("Error getting favorites!", error);
     }
@@ -56,7 +55,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 5,
-    backgroundColor: "#5f8498"
+    backgroundColor: "#5f8498",
   },
   cardContent: {
     flexDirection: "row",
@@ -66,14 +65,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardText: {
-    fontSize: 20
+    fontSize: 20,
   },
   textStyle: {
     fontWeight: "bold",
     fontSize: 20,
     color: "#fff",
     textAlign: "center",
-    paddingVertical: 10
+    paddingVertical: 10,
   },
 });
 
