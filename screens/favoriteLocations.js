@@ -22,7 +22,7 @@ function LocationScreen({navigation}) {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate("LocationDetails", { location: item.location })}>
+    <TouchableOpacity onPress={() => navigation.navigate("LocationDetails", { location: item.location, navigation })}>
       <Card>
         <View style={styles.cardContent}>
           <Text style={styles.cardText}>{item.location}</Text>

@@ -4,6 +4,7 @@ import CustomDrawerContent from "./CustomSidebarMenu";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import LocationScreen from "../screens/favoriteLocations";
 import HomeScreen from "../screens/home";
+import MapScreen from "../screens/map";
 
 
 const Drawer = createDrawerNavigator();
@@ -35,6 +36,17 @@ export default function MyDrawer() {
           }}
           component={LocationScreen}
         />
+          {/* <Drawer.Screen
+          name="Map"
+          options={{
+            drawerLabel: "Map",
+            headerTintColor: "#5f8498",
+            drawerIcon: ({ size, color }) => (
+              <Ionicons name="location-outline" size={size} color={color} />
+            ),
+          }}
+          component={MapScreen}
+        /> */}
       </Drawer.Navigator>
     );
   }

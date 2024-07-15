@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ImageBackground, ToastAndroid } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ImageBackground, ToastAndroid, Button } from 'react-native';
 import Search from '../components/Search';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MapView from 'react-native-maps';
+import Card from "../components/Card";
 
 const API_KEY = "8e62b436f4aee9bbb341843a666409ba";
 
-export default function LocationDetails({ route }) {
+export default function LocationDetails({ route, navigation }) {
   const { location } = route.params;
   const [weatherData, setWeatherData] = useState(null);
   const [loaded, setLoaded] = useState(true);
@@ -122,11 +122,18 @@ export default function LocationDetails({ route }) {
   const {
     weather,
     name,
-    main: { temp },
+    main: { temp, temp_max, temp_min, humidity },
+    wind: { speed },
+    sys: { sunrise, sunset }
   } = weatherData;
 
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={{ flex: 1 }}>
         <ImageBackground
           resizeMode="stretch"
@@ -163,21 +170,47 @@ export default function LocationDetails({ route }) {
           </View>
         </ImageBackground>
       </View>
-      <View style={{ flex: 1 }}>
-        <Text>More details</Text>
+      <View>
+        <Text style={styles.detailTitle}>More Details</Text>
       </View>
-      <View style={{ flex: 1 }}>
-        <MapView style={styles.map}/>
+      <View style={styles.cardContainer}>
+        <Card style={styles.card}>
+          <Text>Max Temp</Text>
+          <Text>{Math.round(temp_max)}°</Text>
+        </Card>
+        <Card style={styles.card}>
+          <Text>Min Temp</Text>
+          <Text>{Math.round(temp_min)}°</Text>
+        </Card>
       </View>
-    </SafeAreaView>
+      <View style={styles.cardContainer}>
+        <Card style={styles.card}>
+          <Text>Wind</Text>
+          <Text>{speed} m/s</Text>
+        </Card>
+        <Card style={styles.card}>
+          <Text>Humidity</Text>
+          <Text>{humidity}%</Text>
+        </Card>
+      </View>
+      <View style={styles.cardContainer}>
+        <Card style={styles.card}>
+          <Text>Sunrise</Text>
+          <Text>{formatTime(sunrise)}</Text>
+        </Card>
+        <Card style={styles.card}>
+          <Text>Sunset</Text>
+          <Text>{formatTime(sunset)}</Text>
+        </Card>
+      </View>
+      <Button style={styles.button} title="View on Map" onPress={() => navigation.navigate("Map", { locationName: name })}></Button>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   text: {
     fontSize: 24,
@@ -194,8 +227,30 @@ const styles = StyleSheet.create({
     color: "#e96e50",
     marginRight: 15,
   },
-  map: {
-    width: '100%',
-    height: '50%',
+  detailTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginVertical: 10,
   },
+  cardContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  card: {
+    flex: 1,
+    padding: 20,
+    margin: 10,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 30,
+    marginBottom: 10
+  }
 });
