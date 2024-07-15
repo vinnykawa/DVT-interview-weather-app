@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import CustomDrawerToggle from "../components/DrawerToggleIcon";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const openWeatherKey = `8e62b436f4aee9bbb341843a666409ba`;
 
@@ -174,10 +175,12 @@ const HomeScreen = ({ navigation }) => {
         }}
         source={weatherImage}
       >
-        <View style={{ alignSelf: "flex-start", marginTop: -40, flexDirection:"row", alignItems: "center" }}>
+        <View style={{ alignSelf: "flex-start", marginTop: -40, marginStart: 10, flexDirection:"row", alignItems: "center" }}>
           <CustomDrawerToggle navigationProps={navigation} />
           <Text style={styles.drawerToggleStyle}>{currentLocation}</Text>
+          <Ionicons name="location-sharp" size={20} color= "#fff" style={{marginBottom:30}} /> 
         </View>
+        
         <View style={{ marginBottom: 50 }}>
           <Text style={{ fontSize: 60, fontWeight: "bold", color: "white" }}>
             {currentTemp}°
@@ -227,6 +230,7 @@ const styles = StyleSheet.create({
     paddingTop: StatusBar.currentHeight,
   },
   loading: {
+    flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
@@ -254,8 +258,9 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     fontSize: 18,
-    padding: 20,
+    padding: 2,
     marginBottom: 30,
+    marginStart:15
   },
 });
 
