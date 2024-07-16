@@ -2,8 +2,8 @@ import React from "react";
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import CustomDrawerContent from "./CustomSidebarMenu";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import LocationScreen from "../screens/favoriteLocations";
-import HomeScreen from "../screens/home";
+import FavoriteLocationScreen from "../screens/FavoriteLocationScreen";
+import HomeScreen from "../screens/HomeScreen";
 
 
 
@@ -33,7 +33,7 @@ export default function MyDrawer() {
               <Ionicons name="location-outline" size={size} color={color} />
             ),
           }}
-          component={LocationScreen}
+          component={FavoriteLocationScreen}
         />
       </Drawer.Navigator>
     );

@@ -1,10 +1,10 @@
 import 'react-native-gesture-handler';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native";
-import LocationDetailsScreen from './screens/locationDetails';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MyDrawer from './components/DrawerNavigation';
-import MapScreen from './screens/map';
+import MapScreen from './screens/MapScreen';
+import LocationDetailsScreen from './screens/LocationDetailsScreen';
 
 
 const Stack = createNativeStackNavigator();

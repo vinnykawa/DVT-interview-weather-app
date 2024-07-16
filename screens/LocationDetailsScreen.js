@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Card from "../components/Card";
 import { OPEN_WEATHER_API_KEY } from "@env";
 
-export default function LocationDetails({ route, navigation }) {
+export default function LocationDetailsScreen({ route, navigation }) {
   const { location } = route.params;
   const [weatherData, setWeatherData] = useState(null);
   const [loaded, setLoaded] = useState(true);

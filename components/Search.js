@@ -25,7 +25,7 @@ export default function Search({ fetchWeatherData }) {
 
 const styles = StyleSheet.create({
   searchBar: {
-    marginTop: 20,
+    marginTop: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

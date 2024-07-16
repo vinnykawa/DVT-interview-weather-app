@@ -10,15 +10,23 @@ import {
   ImageBackground,
   StatusBar,
   FlatList,
+  TouchableOpacity,
+  ToastAndroid,
+  Keyboard,
 } from "react-native";
 import * as Location from "expo-location";
 import CustomDrawerToggle from "../components/DrawerToggleIcon";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { FontAwesome } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { OPEN_WEATHER_API_KEY } from "@env";
+import Search from "../components/Search";
 
 const HomeScreen = ({ navigation }) => {
   const [currentWeather, setCurrentWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
+  const [loaded, setLoaded] = useState(true);
+  const [favorites, setFavorites] = useState([]);
 
   const loadForecast = useCallback(async () => {
     try {
@@ -55,8 +63,82 @@ const HomeScreen = ({ navigation }) => {
     }
   }, []);
 
+  async function fetchWeatherData(cityName) {
+    setLoaded(false);
+    try {
+      const weatherResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${OPEN_WEATHER_API_KEY}`
+      );
+      const weatherData = await weatherResponse.json();
+      if (!weatherResponse.ok) {
+        Alert.alert(`Error retrieving weather data: ${weatherData.message}`);
+        setLoaded(true);
+        return;
+      }
+
+      const forecastResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&units=metric&appid=${OPEN_WEATHER_API_KEY}`
+      );
+      const forecastData = await forecastResponse.json();
+      if (!forecastResponse.ok) {
+        Alert.alert(`Error retrieving weather data: ${forecastData.message}`);
+        setLoaded(true);
+        return;
+      }
+
+      setCurrentWeather(weatherData);
+      setForecast(forecastData);
+      setLoaded(true);
+      Keyboard.dismiss(); 
+    } catch (error) {
+      console.error(error);
+      setLoaded(true);
+    }
+  }
+
+  const addFavorite = async () => {
+    if (currentWeather) {
+      const {
+        name,
+        main: { temp },
+      } = currentWeather;
+      const favItem = { location: name, temperature: Math.round(temp) };
+
+      function containsObject(obj, list) {
+        return list.some(item => item.location === obj.location);
+      }
+
+      // Get the existing favorites from AsyncStorage
+      const favs = await AsyncStorage.getItem("favs");
+      let updatedFavorites = favs ? JSON.parse(favs) : [];
+
+      // Check if the new favorite already exists
+      if (!containsObject(favItem, updatedFavorites)) {
+        updatedFavorites.push(favItem);
+        setFavorites(updatedFavorites);
+        await AsyncStorage.setItem("favs", JSON.stringify(updatedFavorites));
+        ToastAndroid.show(name + " added to favorites", ToastAndroid.SHORT);
+      } else {
+        ToastAndroid.show(name + " already added to favorites", ToastAndroid.SHORT);
+      }
+    }
+  };
+
+  const getFavorites = async () => {
+    try {
+      const favs = await AsyncStorage.getItem("favs");
+      if (favs !== null) {
+        setFavorites(JSON.parse(favs));
+      }
+    } catch (error) {
+      console.log("Error getting favorites!", error);
+    }
+    setLoaded(true);
+  };
+
   useEffect(() => {
     loadForecast();
+    getFavorites(); 
   }, [loadForecast]);
 
   if (!forecast || !currentWeather) {
@@ -152,7 +234,7 @@ const HomeScreen = ({ navigation }) => {
     return (
       <View style={styles.renderItemStyle}>
         <View style={{ flex: 1 }}>
-          <Text style={{ flex: 0, color: "white", fontSize: 18 }}>
+          <Text style={{ color: "white", fontSize: 18 }}>
             {item.day}
           </Text>
         </View>
@@ -170,6 +252,9 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={{ backgroundColor: barColor }}>
+        <Search style={{ marginBottom: 50 }} fetchWeatherData={fetchWeatherData} />
+      </View>
       <StatusBar translucent backgroundColor={barColor} />
       <ImageBackground
         resizeMode="stretch"
@@ -181,16 +266,19 @@ const HomeScreen = ({ navigation }) => {
         }}
         source={weatherImage}
       >
+        <View style={{flex:1, alignItems: "center"}}>
         <View
           style={{
             alignSelf: "flex-start",
-            marginTop: -40,
+            marginTop: 40,
             marginStart: 10,
             flexDirection: "row",
-            alignItems: "center",
+            alignItems: "center"
           }}
         >
-          <CustomDrawerToggle navigationProps={navigation} />
+          <View style={{alignSelf: "flex-start", marginRight: 70}}>
+          <CustomDrawerToggle   navigationProps={navigation} />
+          </View>
           <Text style={styles.drawerToggleStyle}>{currentLocation}</Text>
           <Ionicons
             name="location-sharp"
@@ -198,6 +286,13 @@ const HomeScreen = ({ navigation }) => {
             color="#fff"
             style={{ marginBottom: 30 }}
           />
+          <TouchableOpacity style={{ marginStart: 90 }} onPress={addFavorite}>
+            <FontAwesome
+              name="heart"
+              size={28}
+              color="red"
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={{ marginBottom: 50 }}>
@@ -207,6 +302,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={{ fontSize: 30, fontWeight: "bold", color: "white" }}>
             {weatherDescription}
           </Text>
+        </View>
         </View>
       </ImageBackground>
       <View

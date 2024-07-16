@@ -1,3 +1,4 @@
+import React from "react";
 import { DrawerContentScrollView, DrawerItemList, DrawerItem } from "@react-navigation/drawer";
 
 export default function CustomDrawerContent(props) {

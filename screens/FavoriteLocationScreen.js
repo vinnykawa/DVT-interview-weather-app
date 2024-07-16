@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, SafeAreaView, ActivityIndicator } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  FlatList,
+  SafeAreaView,
+  ActivityIndicator,
+  RefreshControl
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Card from "../components/Card";
 
-
-function LocationScreen({navigation}) {
+export default function FavoriteLocationScreen({ navigation }) {
   const [favorites, setFavorites] = useState([]);
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const getFavorites = async () => {
     try {
@@ -14,14 +23,17 @@ function LocationScreen({navigation}) {
       if (favs !== null) {
         setFavorites(JSON.parse(favs));
       }
-      setLoaded(true);
     } catch (error) {
       console.log("Error getting favorites!", error);
     }
+    setLoaded(true);
+    setRefreshing(false);
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate("LocationDetails", { location: item.location, navigation })}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("LocationDetails", { location: item.location, navigation })}
+    >
       <Card>
         <View style={styles.cardContent}>
           <Text style={styles.cardText}>{item.location}</Text>
@@ -32,13 +44,26 @@ function LocationScreen({navigation}) {
   );
 
   useEffect(() => {
-    getFavorites()
+    getFavorites();
   }, []);
 
-  if(!loaded) {
+  const onRefresh = () => {
+    setRefreshing(true);
+    getFavorites();
+  };
+
+  if (!loaded) {
     return (
       <View style={styles.container}>
         <ActivityIndicator color="gray" size={36} />
+      </View>
+    );
+  } else if (favorites.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.primaryText}>
+          No favorites added.
+        </Text>
       </View>
     );
   }
@@ -46,7 +71,14 @@ function LocationScreen({navigation}) {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.textStyle}>Favorite Locations</Text>
-      <FlatList data={favorites} renderItem={renderItem} keyExtractor={(item) => item.location} />
+      <FlatList
+        data={favorites}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.location}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -56,8 +88,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 5,
     backgroundColor: "#5f8498",
+    justifyContent: "center",
+    alignItems: "center",
   },
   cardContent: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 10,
@@ -74,6 +109,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 10,
   },
+  primaryText: {
+    fontSize: 24,
+    color: "white",
+    textAlign: "center",
+    marginTop: 20,
+  },
 });
-
-export default LocationScreen;
