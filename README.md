@@ -70,13 +70,6 @@ Once the project is up and running, users can:
 - **React Native Maps**: For rendering maps within the application.
 - **Axios**: For making HTTP requests, including geocoding requests.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Contributing
-
-Contributions are welcome! Please read the [CONTRIBUTING](CONTRIBUTING.md) file for guidelines on contributing to this project.
 
 ## Acknowledgements
 
