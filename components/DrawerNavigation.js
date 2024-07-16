@@ -18,7 +18,7 @@ export default function MyDrawer() {
           name="Home"
           options={{
             drawerLabel: "Home",
-            headerShown: false,
+            
             drawerIcon: ({ size, color }) => (
               <Ionicons name="home-outline" size={size} color={color} />
             ),

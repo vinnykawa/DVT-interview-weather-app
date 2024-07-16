@@ -22,11 +22,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { OPEN_WEATHER_API_KEY } from "@env";
 import Search from "../components/Search";
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = () => {
   const [currentWeather, setCurrentWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [loaded, setLoaded] = useState(true);
   const [favorites, setFavorites] = useState([]);
+  const [iconColor, setIconColor] = useState("grey");
 
   const loadForecast = useCallback(async () => {
     try {
@@ -65,6 +66,7 @@ const HomeScreen = ({ navigation }) => {
 
   async function fetchWeatherData(cityName) {
     setLoaded(false);
+    setIconColor("grey");
     try {
       const weatherResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${OPEN_WEATHER_API_KEY}`
@@ -90,6 +92,7 @@ const HomeScreen = ({ navigation }) => {
       setForecast(forecastData);
       setLoaded(true);
       Keyboard.dismiss(); 
+      checkIfFavorited(weatherData.name);
     } catch (error) {
       console.error(error);
       setLoaded(true);
@@ -103,27 +106,32 @@ const HomeScreen = ({ navigation }) => {
         main: { temp },
       } = currentWeather;
       const favItem = { location: name, temperature: Math.round(temp) };
-
-      function containsObject(obj, list) {
-        return list.some(item => item.location === obj.location);
-      }
-
-      // Get the existing favorites from AsyncStorage
+  
+     
       const favs = await AsyncStorage.getItem("favs");
       let updatedFavorites = favs ? JSON.parse(favs) : [];
-
+  
       // Check if the new favorite already exists
-      if (!containsObject(favItem, updatedFavorites)) {
+      const existingIndex = updatedFavorites.findIndex(
+        (item) => item.location === favItem.location
+      );
+      if (existingIndex === -1) {
+        // Add the new favorite
         updatedFavorites.push(favItem);
         setFavorites(updatedFavorites);
         await AsyncStorage.setItem("favs", JSON.stringify(updatedFavorites));
         ToastAndroid.show(name + " added to favorites", ToastAndroid.SHORT);
       } else {
-        ToastAndroid.show(name + " already added to favorites", ToastAndroid.SHORT);
+        // Remove the existing favorite
+        updatedFavorites.splice(existingIndex, 1);
+        setFavorites(updatedFavorites);
+        await AsyncStorage.setItem("favs", JSON.stringify(updatedFavorites));
+        ToastAndroid.show(name + " removed from favorites", ToastAndroid.SHORT);
       }
+      checkIfFavorited(name);
     }
   };
-
+  
   const getFavorites = async () => {
     try {
       const favs = await AsyncStorage.getItem("favs");
@@ -136,10 +144,27 @@ const HomeScreen = ({ navigation }) => {
     setLoaded(true);
   };
 
+  const checkIfFavorited = async (location) => {
+    try {
+      const favs = await AsyncStorage.getItem("favs");
+      const favoriteList = favs ? JSON.parse(favs) : [];
+      const isFavorited = favoriteList.some((item) => item.location === location);
+      setIconColor(isFavorited ? "red" : "grey");
+    } catch (error) {
+      console.log("Error checking if favorited!", error);
+    }
+  };
+
   useEffect(() => {
     loadForecast();
     getFavorites(); 
   }, [loadForecast]);
+
+  useEffect(() => {
+    if (currentWeather) {
+      checkIfFavorited(currentWeather.name);
+    }
+  }, [currentWeather]);
 
   if (!forecast || !currentWeather) {
     return (
@@ -252,59 +277,43 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ backgroundColor: barColor }}>
-        <Search style={{ marginBottom: 50 }} fetchWeatherData={fetchWeatherData} />
-      </View>
       <StatusBar translucent backgroundColor={barColor} />
-      <ImageBackground
-        resizeMode="stretch"
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: weatherBgColor,
-        }}
-        source={weatherImage}
-      >
-        <View style={{flex:1, alignItems: "center"}}>
-        <View
+      <View style={{ flex: 1 }}>
+        <ImageBackground
+          resizeMode="stretch"
           style={{
-            alignSelf: "flex-start",
-            marginTop: 40,
-            marginStart: 10,
-            flexDirection: "row",
-            alignItems: "center"
+            flex: 1,
           }}
+          source={weatherImage}
         >
-          <View style={{alignSelf: "flex-start", marginRight: 70}}>
-          <CustomDrawerToggle   navigationProps={navigation} />
+          <View style={{ alignItems: "center" }}>
+            <Search fetchWeatherData={fetchWeatherData} />
+            <View style={{flexDirection: "row", padding: 20}}>
+              <Text style={styles.currentLocationTxt}>{currentLocation}</Text>
+              <TouchableOpacity style={{marginLeft: 10}}>
+                <FontAwesome
+                  name="heart"
+                  size={28}
+                  color={iconColor}
+                  onPress={addFavorite}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={{ marginBottom: 50 }}>
+              <Text
+                style={{ fontSize: 60, fontWeight: "bold", color: "white", padding:20 }}
+              >
+                {Math.round(currentTemp)}°
+              </Text>
+              <Text
+                style={{ fontSize: 30, fontWeight: "bold", color: "white" }}
+              >
+                {weatherDescription}
+              </Text>
+            </View>
           </View>
-          <Text style={styles.drawerToggleStyle}>{currentLocation}</Text>
-          <Ionicons
-            name="location-sharp"
-            size={20}
-            color="#fff"
-            style={{ marginBottom: 30 }}
-          />
-          <TouchableOpacity style={{ marginStart: 90 }} onPress={addFavorite}>
-            <FontAwesome
-              name="heart"
-              size={28}
-              color="red"
-            />
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ marginBottom: 50 }}>
-          <Text style={{ fontSize: 60, fontWeight: "bold", color: "white" }}>
-            {currentTemp}°
-          </Text>
-          <Text style={{ fontSize: 30, fontWeight: "bold", color: "white" }}>
-            {weatherDescription}
-          </Text>
-        </View>
-        </View>
-      </ImageBackground>
+        </ImageBackground>
+      </View>
       <View
         style={{
           flexDirection: "row",
@@ -342,7 +351,6 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight,
   },
   loading: {
     flex: 1,
@@ -364,6 +372,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 18,
   },
+  currentLocationTxt: {
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+    fontSize: 24,
+  },
   currentTempsTxt: {
     color: "white",
     fontSize: 18,
@@ -376,6 +390,11 @@ const styles = StyleSheet.create({
     padding: 2,
     marginBottom: 30,
     marginStart: 15,
+  },
+  searchBarstyle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 });
 

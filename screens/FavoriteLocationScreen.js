@@ -44,11 +44,10 @@ export default function FavoriteLocationScreen({ navigation }) {
   );
 
   useEffect(() => {
-    getFavorites();
-  }, []);
+    onRefresh()
+  }, [favorites]);
 
   const onRefresh = () => {
-    setRefreshing(true);
     getFavorites();
   };
 

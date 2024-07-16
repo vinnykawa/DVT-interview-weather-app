@@ -40,57 +40,21 @@ export default function LocationDetailsScreen({ route, navigation }) {
     }
   };
 
-  const addFavorite = async () => {
-    if (weatherData) {
-      const {
-        name,
-        main: { temp },
-      } = weatherData;
-      const favItem = { location: name, temperature: Math.round(temp) };
 
-      function containsObject(obj) {
-        var i;
-        for (i = 0; i < favorites.length; i++) {
-          if (favorites[i].location === obj.location) {
-            favorites[i] = obj;
-            return true;
-          }
-        }
-        return false;
-      }
-
-      if (!containsObject(favItem)) {
-        const updatedFavorites = [...favorites, favItem];
-        setFavorites(updatedFavorites);
-        await AsyncStorage.setItem("favs", JSON.stringify(updatedFavorites));
-        ToastAndroid.show(name + " added to favorites", ToastAndroid.SHORT);
-      } else {
-        ToastAndroid.show(name + " already added to favorites", ToastAndroid.SHORT);
-      }
-    }
-  };
 
   useEffect(() => {
     fetchWeatherData(location);
     getFavorites();
   }, []);
 
-  if (!loaded) {
+  if (!weatherData) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator color="gray" size={36} />
+      <View style={styles.loading}>
+        <ActivityIndicator color="gray" size="large" />
       </View>
     );
-  } else if (weatherData === null) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Search fetchWeatherData={fetchWeatherData} />
-        <Text style={styles.primaryText}>
-          City Not Found! Try Different City
-        </Text>
-      </SafeAreaView>
-    );
   }
+
 
   const condition = weatherData.weather[0].description;
 
@@ -155,14 +119,6 @@ export default function LocationDetailsScreen({ route, navigation }) {
             <Search fetchWeatherData={fetchWeatherData} />
             <View style={styles.searchBarstyle}>
               <Text style={styles.title}>{name}</Text>
-              <TouchableOpacity>
-                <FontAwesome
-                  name="heart"
-                  size={28}
-                  color="red"
-                  onPress={addFavorite}
-                />
-              </TouchableOpacity>
             </View>
             <View style={{ marginBottom: 50 }}>
               <Text
@@ -227,6 +183,12 @@ export default function LocationDetailsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loading: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchBarstyle: {
     flexDirection: "row",
