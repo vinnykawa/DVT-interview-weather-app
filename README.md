@@ -48,6 +48,7 @@ To run the project locally, follow these steps:
 4. **Get API Keys**:
    - **OpenWeatherAPI Key**: Follow the official documentation to get your API key [here](https://openweathermap.org/appid).
    - **Google API Key**: Follow the official documentation to get your API key [here](https://developers.google.com/maps/documentation/android-sdk/overview).
+   Login to your Google cloud console account. Create a project and navigate to ApI's and Services section. **Enable Maps SDK** for Android and **Geocoding API**
 
 5. **Run the Project**:
    ```sh
